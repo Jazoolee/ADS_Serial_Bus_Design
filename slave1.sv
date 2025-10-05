@@ -2,10 +2,10 @@ module slave1(
     input logic clk,
     input logic rstn,
 
-    input rx,
-    output tx,
+    input logic rx,
+    output logic tx,
 
-    input busy
+    input logic busy
     );
 
     logic [13:0] counter;
@@ -51,6 +51,7 @@ module slave1(
                         state <= DATA_RX;
                     end
                 end
+                default: state <= IDLE;
             endcase
         end
     end
