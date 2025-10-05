@@ -14,10 +14,10 @@ module master1(
     logic [2:0] state;
     localparam IDLE = 3'b000;
     localparam REQ = 3'b001;
-    localparam ARB_WAIT = 3'b010;
-    localparam ADDR_TX = 3'b011;
-    localparam SLV_WAIT = 3'b100;
-    localparam DATA_TX = 3'b101;
+    // localparam ARB_WAIT = 3'b010;
+    localparam WAIT_AND_TX_ADDR = 3'b010;
+    // localparam SLV_WAIT = 3'b100;
+    localparam WAIT_AND_TX_DATA = 3'b011;
 
     always_ff @(posedge clk or negedge rstn) begin
         if (!rstn) begin
@@ -32,31 +32,35 @@ module master1(
                 end
                 REQ: begin
                     tx <= '0;
-                    state <= ARB_WAIT;
+                    state <= WAIT_AND_TX_ADDR;
                 end
-                ARB_WAIT: begin
-                    if (rx === '0) state <= ADDR_TX;
-                end
-                ADDR_TX: begin
-                    if (counter <= 13) begin
-                        tx <= addr[counter];
-                        counter <= counter+1;
-                    end else begin
-                        counter <= 0;
-                        tx <= '0;
-                        state <= SLV_WAIT;
+                // ARB_WAIT: begin
+                //     if (rx === '0) state <= ADDR_TX;
+                // end
+                WAIT_AND_TX_ADDR: begin
+                    if (rx === '0) begin
+                        if (counter <= 13) begin
+                            tx <= addr[counter];
+                            counter <= counter+1;
+                        end else begin
+                            counter <= 0;
+                            tx <= '0;
+                            state <= WAIT_AND_TX_DATA;
+                        end
                     end
                 end
-                SLV_WAIT: begin
-                    if (rx === '0) state <= DATA_TX;
-                end
-                DATA_TX: begin
-                    if (counter <= 7) begin
-                        tx <= data[counter];
-                        counter <= counter+1;
-                    end else begin
-                        counter <= 0;
-                        state <= IDLE;
+                // SLV_WAIT: begin
+                //     if (rx === '0) state <= DATA_TX;
+                // end
+                WAIT_AND_TX_DATA: begin
+                    if (rx === '0) begin
+                        if (counter <= 7) begin
+                            tx <= data[counter];
+                            counter <= counter+1;
+                        end else begin
+                            counter <= 0;
+                            state <= IDLE;
+                        end
                     end
                 end
                 default: state <= IDLE;
@@ -65,8 +69,8 @@ module master1(
     end
 
     always_ff @(posedge data_ready) begin
-        addr <=14'b0;
-        data <=8'b1;
+        addr <=14'h0AA8; // 00 1010 1010 1000
+        data <=8'hAB; // 1010 1011
     end
 
 endmodule

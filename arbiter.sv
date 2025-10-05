@@ -22,13 +22,16 @@ module arbiter(
     logic [13:0] counter; 
     logic m_rx;
     
-    logic [2:0] state;
-    localparam IDLE = 3'b000;
-    localparam BUS_REQUESTED = 3'b001;
-    localparam SPLIT = 3'b010;
-    localparam ADDR_TX = 3'b011;
-    localparam SLV_WAIT = 3'b100;
-    localparam DATA_TX = 3'b101;
+    logic [4:0] state;
+    localparam IDLE = 4'b0000;
+    // localparam BUS_REQUESTED = 4'b0001;   
+    localparam BUS_GRANTED = 4'b0010; 
+    localparam WAIT_FOR_ADDR = 4'b0011;    
+    localparam ADDR_TX = 4'b0100;
+    localparam ADDR_RX = 4'b0101;
+    localparam SLV_WAIT = 4'b0110;
+    localparam DATA_TX = 4'b0111;
+    localparam SPLIT = 4'b1000;
 
     assign m1 = (m1_queued && !m1_splitted);
     assign m2 = (m2_queued && !m2_splitted);
@@ -43,58 +46,78 @@ module arbiter(
             m2_queued <= '0;
             m1_splitted <= '0;
             m2_splitted <= '0;
+            addr_rdy <= '0;
         end else begin
             case (state)
                 IDLE: begin
                     m1_rx <= '1;
                     m2_rx <= '1;
                     counter <= '0;
-                    m1_queued <= '0;
-                    m2_queued <= '0;
-                    m1_splitted <= '0;
-                    m2_splitted <= '0;
-                    if (!m1_tx || !m2_tx) state <= BUS_REQUESTED;
-                end
-                BUS_REQUESTED: begin
-                    if ((!m1_tx && !m1_splitted) && (!m2_tx && !m2_splitted)) begin
-                        m1_queued <= '1;
-                        m2_queued <= '0;
-                    end else if ((!m1_tx && m1_splitted) && (!m2_tx && !m2_splitted)) begin
-                        m1_queued <= '0;
-                        m2_queued <= '1;
-                    end else if ((!m1_tx && !m1_splitted) && (!m2_tx && m2_splitted)) begin
-                        m1_queued <= '1;
-                        m2_queued <= '0;
-                    end else if (!m1_tx) begin
-                        m1_queued <= '1;
-                        m2_queued <= '0;
-                    end else if (!m2_tx) begin
-                        m1_queued <= '0;
-                        m2_queued <= '1;
+                    addr_rdy <= '0;
+                    if (!m1_tx || !m2_tx) begin
+                        if ((!m1_tx && !m1_splitted) && (!m2_tx && !m2_splitted)) begin
+                            m1_queued <= '1;
+                            m2_queued <= '0;
+                        end else if ((!m1_tx && m1_splitted) && (!m2_tx && !m2_splitted)) begin
+                            m1_queued <= '0;
+                            m2_queued <= '1;
+                        end else if ((!m1_tx && !m1_splitted) && (!m2_tx && m2_splitted)) begin
+                            m1_queued <= '1;
+                            m2_queued <= '0;
+                        end else if (!m1_tx) begin
+                            m1_queued <= '1;
+                            m2_queued <= '0;
+                        end else if (!m2_tx) begin
+                            m1_queued <= '0;
+                            m2_queued <= '1;
+                        end
+                        state <= BUS_GRANTED;
                     end
-
+                end
+                // BUS_REQUESTED: begin
+                //     if ((!m1_tx && !m1_splitted) && (!m2_tx && !m2_splitted)) begin
+                //         m1_queued <= '1;
+                //         m2_queued <= '0;
+                //     end else if ((!m1_tx && m1_splitted) && (!m2_tx && !m2_splitted)) begin
+                //         m1_queued <= '0;
+                //         m2_queued <= '1;
+                //     end else if ((!m1_tx && !m1_splitted) && (!m2_tx && m2_splitted)) begin
+                //         m1_queued <= '1;
+                //         m2_queued <= '0;
+                //     end else if (!m1_tx) begin
+                //         m1_queued <= '1;
+                //         m2_queued <= '0;
+                //     end else if (!m2_tx) begin
+                //         m1_queued <= '0;
+                //         m2_queued <= '1;
+                //     end
+                //     state <= BUS_GRANTED;
+                // end
+                BUS_GRANTED: begin
                     if (m1_queued && !m1_splitted) m1_rx <= '0;
                     if (m2_queued && !m2_splitted) m2_rx <= '0;
                     state <= ADDR_TX;
                 end
-                ADDR_TX: begin
+                ADDR_TX: state <= ADDR_RX;
+                ADDR_RX: begin
                     if (counter <= 13) begin
                         if (m1_queued && !m1_splitted) begin
                             addr[counter] <= m1_tx;
-                            m1_rx <= '1;
+                            if (counter == 13) m1_rx <= '1;
                         end
                         if (m2_queued && !m2_splitted) begin
-                            addr[counter] <= m2_tx;
-                            m2_rx <= '1;
+                            addr[counter] <= m2_tx;  
+                            if (counter == 13) m2_rx <= '1;                          
                         end
                         counter <= counter + 1;
                     end else begin
-                        addr_rdy <= '1;
-                        state <= SLV_WAIT;
+                        addr_rdy <= '1;                        
                         counter <= 0;
+                        state <= SLV_WAIT;
                     end
                 end
                 SLV_WAIT: begin
+                    addr_rdy <= '0;
                     if (slv_ready) begin
                         if (m1_queued && !m1_splitted) m1_rx <= '0;
                         if (m2_queued && !m2_splitted) m2_rx <= '0;
@@ -124,8 +147,9 @@ module arbiter(
                 SPLIT: begin
                     if (m1_queued && !m2_tx) m1_splitted <= '1; 
                     if (m2_queued && !m1_tx) m2_splitted <= '1;
-                    state <= BUS_REQUESTED; 
+                    state <= BUS_GRANTED; 
                 end
+                default: state <= IDLE;
             endcase
         end
     end

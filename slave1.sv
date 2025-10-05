@@ -14,8 +14,12 @@ module slave1(
     logic [2:0] state;
     localparam IDLE = 3'b000;
     localparam SLV_REQUESTED = 3'b001;
-    localparam DATA_RX = 3'b011;
-    localparam SPLIT = 3'b100;
+    localparam SLV_READY = 3'b010;
+    localparam SLV_GRANTED = 3'b011;
+    localparam DATA_TX = 3'b100;
+    localparam DATA_READY = 3'b111;
+    localparam DATA_RX = 3'b101;
+    localparam SPLIT = 3'b110;
 
     always_ff @(posedge clk or negedge rstn) begin
         if (!rstn) begin
@@ -30,11 +34,15 @@ module slave1(
                 SLV_REQUESTED: begin
                     if (!busy) begin
                         tx <= '0;
-                        state <= DATA_RX;
+                        state <= SLV_READY;
                     end else begin
                         state <= SPLIT;
                     end
                 end
+                SLV_READY: state <= SLV_GRANTED;
+                SLV_GRANTED: state <= DATA_TX;
+                DATA_TX: state <= DATA_READY;
+                DATA_READY: state <= DATA_RX;
                 DATA_RX: begin
                     if (counter <= 7) begin
                         data[counter] <= rx;
@@ -48,7 +56,7 @@ module slave1(
                 SPLIT: begin
                     if (!busy) begin
                         tx <= '0;
-                        state <= DATA_RX;
+                        state <= SLV_READY;
                     end
                 end
                 default: state <= IDLE;

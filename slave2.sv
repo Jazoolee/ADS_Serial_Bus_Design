@@ -2,8 +2,8 @@ module slave2(
     input logic clk,
     input logic rstn,
 
-    input rx,
-    output tx
+    input logic rx,
+    output logic tx
     );
 
     logic [13:0] counter;
