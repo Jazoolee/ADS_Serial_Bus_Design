@@ -19,6 +19,7 @@ module ADS_BUS(
     logic m1;
     logic m2;
     logic slv_ready;
+    logic slv_responded;
 
     master1 master1(
         .clk(clk),
@@ -47,7 +48,8 @@ module ADS_BUS(
         .addr_rdy(addr_rdy),
         .m1(m1),
         .m2(m2),
-        .slv_ready(slv_ready)
+        .slv_ready(slv_ready),
+        .slv_responded(slv_responded)
     );
 
     address_decoder address_decoder(
@@ -65,7 +67,8 @@ module ADS_BUS(
         .addr_rdy(addr_rdy),
         .m1(m1),
         .m2(m2),
-        .slv_ready(slv_ready)
+        .slv_ready(slv_ready),
+        .slv_responded(slv_responded)
     );
 
     slave1 slave1(
