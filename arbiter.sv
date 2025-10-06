@@ -24,7 +24,7 @@ module arbiter(
     
     logic [4:0] state;
     localparam IDLE = 4'b0000;
-    // localparam BUS_REQUESTED = 4'b0001;   
+    localparam BUS_REQUESTED = 4'b0001;   
     localparam BUS_GRANTED = 4'b0010; 
     localparam WAIT_FOR_ADDR = 4'b0011;    
     localparam ADDR_TX = 4'b0100;
@@ -55,44 +55,28 @@ module arbiter(
                     counter <= '0;
                     addr_rdy <= '0;
                     if (!m1_tx || !m2_tx) begin
-                        if ((!m1_tx && !m1_splitted) && (!m2_tx && !m2_splitted)) begin
-                            m1_queued <= '1;
-                            m2_queued <= '0;
-                        end else if ((!m1_tx && m1_splitted) && (!m2_tx && !m2_splitted)) begin
-                            m1_queued <= '0;
-                            m2_queued <= '1;
-                        end else if ((!m1_tx && !m1_splitted) && (!m2_tx && m2_splitted)) begin
-                            m1_queued <= '1;
-                            m2_queued <= '0;
-                        end else if (!m1_tx) begin
-                            m1_queued <= '1;
-                            m2_queued <= '0;
-                        end else if (!m2_tx) begin
-                            m1_queued <= '0;
-                            m2_queued <= '1;
-                        end
-                        state <= BUS_GRANTED;
+                        state <= BUS_REQUESTED;
                     end
                 end
-                // BUS_REQUESTED: begin
-                //     if ((!m1_tx && !m1_splitted) && (!m2_tx && !m2_splitted)) begin
-                //         m1_queued <= '1;
-                //         m2_queued <= '0;
-                //     end else if ((!m1_tx && m1_splitted) && (!m2_tx && !m2_splitted)) begin
-                //         m1_queued <= '0;
-                //         m2_queued <= '1;
-                //     end else if ((!m1_tx && !m1_splitted) && (!m2_tx && m2_splitted)) begin
-                //         m1_queued <= '1;
-                //         m2_queued <= '0;
-                //     end else if (!m1_tx) begin
-                //         m1_queued <= '1;
-                //         m2_queued <= '0;
-                //     end else if (!m2_tx) begin
-                //         m1_queued <= '0;
-                //         m2_queued <= '1;
-                //     end
-                //     state <= BUS_GRANTED;
-                // end
+                BUS_REQUESTED: begin
+                    if ((!m1_tx && !m1_splitted) && (!m2_tx && !m2_splitted)) begin
+                        m1_queued <= '1;
+                        m2_queued <= '0;
+                    end else if ((!m1_tx && m1_splitted) && (!m2_tx && !m2_splitted)) begin
+                        m1_queued <= '0;
+                        m2_queued <= '1;
+                    end else if ((!m1_tx && !m1_splitted) && (!m2_tx && m2_splitted)) begin
+                        m1_queued <= '1;
+                        m2_queued <= '0;
+                    end else if (!m1_tx) begin
+                        m1_queued <= '1;
+                        m2_queued <= '0;
+                    end else if (!m2_tx) begin
+                        m1_queued <= '0;
+                        m2_queued <= '1;
+                    end
+                    state <= BUS_GRANTED;
+                end
                 BUS_GRANTED: begin
                     if (m1_queued && !m1_splitted) m1_rx <= '0;
                     if (m2_queued && !m2_splitted) m2_rx <= '0;
