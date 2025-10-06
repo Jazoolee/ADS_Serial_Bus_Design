@@ -17,9 +17,9 @@ module slave1(
     localparam SLV_READY = 3'b010;
     localparam SLV_GRANTED = 3'b011;
     localparam DATA_TX = 3'b100;
-    localparam DATA_READY = 3'b111;
-    localparam DATA_RX = 3'b101;
-    localparam SPLIT = 3'b110;
+    localparam DATA_READY = 3'b101;
+    localparam DATA_RX = 3'b110;
+    localparam SPLIT = 3'b111;
 
     always_ff @(posedge clk or negedge rstn) begin
         if (!rstn) begin

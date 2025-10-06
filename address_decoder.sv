@@ -68,7 +68,7 @@ module address_decoder(
                         s2_rx <= '1;
                         s3_rx <= '1;
                         state <= SLV_GRANTED;
-                    end else begin
+                    end else if (!s1_rx && s1_tx) begin
                         slv_ready <= '0;
                         state <= SPLIT;
                     end
