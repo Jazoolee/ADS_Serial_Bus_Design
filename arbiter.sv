@@ -12,7 +12,8 @@ module arbiter(
     output logic addr_rdy,
     output logic m1,
     output logic m2,
-    input logic slv_ready
+    input logic slv_ready,
+    input logic slv_responded
 	 );
 
     logic m1_queued;
@@ -106,7 +107,7 @@ module arbiter(
                         if (m1_queued && !m1_splitted) m1_rx <= '0;
                         if (m2_queued && !m2_splitted) m2_rx <= '0;
                         state <= DATA_TX; 
-                    end else begin
+                    end else if (!slv_ready && slv_responded) begin                        
                         if ((m1_queued && !m2_tx) || (m2_queued && !m1_tx)) state <= SPLIT;
                     end
                 end
@@ -131,7 +132,7 @@ module arbiter(
                 SPLIT: begin
                     if (m1_queued && !m2_tx) m1_splitted <= '1; 
                     if (m2_queued && !m1_tx) m2_splitted <= '1;
-                    state <= BUS_GRANTED; 
+                    state <= BUS_REQUESTED; 
                 end
                 default: state <= IDLE;
             endcase

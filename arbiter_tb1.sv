@@ -8,6 +8,7 @@ module arbiter_tb1();
     logic m1_data_ready, m2_data_ready;
     logic [13:0] addr;
     logic addr_rdy;
+    logic slv_ready, slv_responded;
     logic m1, m2;
     logic busy;
     
@@ -95,11 +96,13 @@ module arbiter_tb1();
     end
 
     initial begin
-        #590 busy = '0;
+        #590 busy = '0; // slave1_split scenario
     end
 
     initial begin
-        #800 m2_data_ready = '1;
+        // #70 m2_data_ready = '1; // slave1_split scenario
+
+        #590 m2_data_ready = '1;
         #20 m2_data_ready = '0;
     end
 endmodule

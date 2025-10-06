@@ -17,7 +17,8 @@ module address_decoder(
     input logic addr_rdy,
     input logic m1,
     input logic m2,
-    output logic slv_ready
+    output logic slv_ready,
+    output logic slv_responded
     );
 
     logic [13:0] counter;
@@ -41,10 +42,12 @@ module address_decoder(
             slv_ready <= '0;
             s1_splitted <= '0;
             counter <= 0;
+            slv_responded <= '0;
         end else begin
             case (state)
                 IDLE: begin
                     slv_ready <= '0;
+                    slv_responded <= '0;
                     counter <= 0;
                     if (addr_rdy) state <= SLV_REQUESTED;
                     else if (s1_splitted && !s1_tx) begin
@@ -64,6 +67,7 @@ module address_decoder(
                 SLV_WAIT: begin
                     if (!s1_tx || !s2_tx || !s3_tx) begin
                         slv_ready <= '1;
+                        slv_responded <= '1;
                         s1_rx <= '1;
                         s2_rx <= '1;
                         s3_rx <= '1;
