@@ -41,9 +41,9 @@ module ADS_BUS(
         .clk(clk),
         .rstn(rstn),
         .m1_tx(m1_tx),
-        .m1_rx(m1_rx),
+        .m1_rx(m1_arbiter_data),
         .m2_tx(m2_tx),
-        .m2_rx(m2_rx),
+        .m2_rx(m2_arbiter_data),
         .addr(addr),
         .addr_rdy(addr_rdy),
         .m1(m1),
@@ -52,11 +52,27 @@ module ADS_BUS(
         .slv_responded(slv_responded)
     );
 
+    read_mux m1_read_mux (
+        .mux_sel(m1_mux_sel),
+        .decoder_data(m1_decoder_data),
+        .arbiter_data(m1_arbiter_data),
+        .master_rx(m1_rx)
+    );
+
+    read_mux m2_read_mux (
+        .mux_sel(m2_mux_sel),
+        .decoder_data(m2_decoder_data),
+        .arbiter_data(m2_arbiter_data),
+        .master_rx(m2_rx)
+    );
+
     address_decoder address_decoder(
         .clk(clk),
         .rstn(rstn),
         .m1_tx(m1_tx),
         .m2_tx(m2_tx),
+        .m1_rx(m1_decoder_data),
+        .m2_rx(m2_decoder_data),
         .s1_tx(s1_tx),
         .s1_rx(s1_rx),
         .s2_tx(s2_tx),
@@ -68,7 +84,9 @@ module ADS_BUS(
         .m1(m1),
         .m2(m2),
         .slv_ready(slv_ready),
-        .slv_responded(slv_responded)
+        .slv_responded(slv_responded),
+        .m1_mux_sel(m1_mux_sel),
+        .m2_mux_sel(m2_mux_sel)
     );
 
     slave1 slave1(

@@ -33,13 +33,10 @@ module m1_tb();
 
     initial begin
         #90 rx = '0;
-        #20 rx = '1;
+        #80 rx = '1;
     end
 
     initial begin
         #410 rx = '0;
-        #20 rx = '1;
     end
-
-    initial #100 rx = '0;
 endmodule
