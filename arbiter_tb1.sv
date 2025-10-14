@@ -106,7 +106,7 @@ module arbiter_tb1();
         s3_tx = '1;
         m1_data_ready = '0;
         m2_data_ready = '0;
-        busy = '1;
+        busy = '0;
         m1_rw = '1;
         m2_rw = '0;
     end
@@ -124,14 +124,11 @@ module arbiter_tb1();
     end
 
     initial begin
-        #3000 busy = '0; // slave1_split scenario
+        #800 busy = '0; // slave1_split scenario
     end
 
     initial begin
-        #90 m2_data_ready = '1; // slave1_split scenario
+        #280 m2_data_ready = '1; // slave1_split scenario
         #20 m2_data_ready = '0;
-
-        // #590 m2_data_ready = '1;
-        // #20 m2_data_ready = '0;
     end
 endmodule

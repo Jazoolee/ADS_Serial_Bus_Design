@@ -79,7 +79,7 @@ module slave1(
                     end
                 end
                 SPLIT: begin
-                    if (!busy) begin
+                    if (!busy && !rx) begin
                         tx <= '0;
                         state <= SLV_READY;
                     end

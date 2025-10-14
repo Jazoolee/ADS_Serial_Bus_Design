@@ -28,7 +28,7 @@ module address_decoder(
     );
 
     logic [13:0] counter;
-    logic s1_splitted; 
+    logic [1:0] s1_splits; 
 
     logic s1_queued;
     logic s2_queued;
@@ -38,6 +38,7 @@ module address_decoder(
     localparam IDLE = 4'b0000;
     localparam SLV_REQUESTED = 4'b0001;
     localparam SLV_WAIT = 4'b0010;
+    localparam SLV_RESPONDED = 4'b1010;
     localparam SLV_GRANTED = 4'b0011;
     localparam ADDR_TX = 4'b0100;
     localparam ADDR_RX = 4'b0101;
@@ -53,7 +54,7 @@ module address_decoder(
             s2_rx <= '1;
             s3_rx <= '1;
             slv_ready <= '0;
-            s1_splitted <= '0;
+            s1_splits <= 2'b00;
             counter <= 0;
             slv_responded <= '0;
             m1_mux_sel <= '0;
@@ -65,16 +66,31 @@ module address_decoder(
             case (state)
                 IDLE: begin
                     slv_ready <= '0;
-                    slv_responded <= '0;
-                    counter <= 0;
-                    if (addr_rdy) state <= SLV_REQUESTED;
-                    else if (s1_splitted && !s1_tx) begin
+                    slv_responded <= '0;                    
+                    if (s1_splits == 2'b11 || s1_splits == 2'b01) s1_rx <= '0;
+                    else if (s1_splits == 2'b10) begin
+                        if (counter < 1) counter <= counter + 1;
+                        else s1_rx <= '0;
+                    end
+                    if (addr_rdy) begin
+                        s1_rx <= '1;
+                        state <= SLV_REQUESTED;
+                    end
+                    else if ((s1_splits == 2'b11 || s1_splits == 2'b01) && !s1_tx) begin
                         slv_ready <= '1;
                         slv_responded <= '1;
                         state <= SLV_GRANTED;
+                    end 
+                    else if ((s1_splits == 2'b10) && !s1_tx) begin
+                        if (counter == 1) begin
+                            slv_ready <= '1;
+                            slv_responded <= '1;
+                            state <= SLV_GRANTED;
+                        end
                     end
                 end
                 SLV_REQUESTED: begin
+                    counter <= 0;
                     case (addr)
                         2'b00: s1_rx <= '0;
                         2'b01: s2_rx <= '0;
@@ -83,6 +99,13 @@ module address_decoder(
                     state <= SLV_WAIT;
                 end
                 SLV_WAIT: begin
+                    if (counter < 1) counter <= counter + 1;
+                    else begin
+                        counter <= '0;
+                        state <= SLV_RESPONDED;
+                    end
+                end
+                SLV_RESPONDED: begin
                     if (!s1_tx || !s2_tx || !s3_tx) begin
                         slv_ready <= '1;
                         slv_responded <= '1;
@@ -93,11 +116,11 @@ module address_decoder(
                     end else if ((!s1_rx && s2_rx && s3_rx) && s1_tx) begin
                         slv_ready <= '0;
                         slv_responded <= '1;
-                        s1_rx <= '1;
                         state <= SPLIT;
                     end
                 end
                 SLV_GRANTED: begin
+                    counter <= 0;
                     slv_ready <= '0;
                     slv_responded <= '0;
                     state <= ADDR_TX;
@@ -123,7 +146,10 @@ module address_decoder(
                     if (counter <= 7) begin
                         if (!s1_tx) begin
                             s1_rx <= m1? m1_tx : m2_tx;
-                            if (s1_splitted) s1_splitted <= '0;
+                            if (counter == 7) begin
+                                if (s1_splits == 2'b01 || s1_splits == 2'b10) s1_splits <= 2'b00;
+                                else if (s1_splits == 2'b11) s1_splits[0] <= '0;
+                            end
                         end
                         if (!s2_tx) s2_rx <= m1? m1_tx : m2_tx;
                         if (!s3_tx) s3_rx <= m1? m1_tx : m2_tx;
@@ -158,14 +184,20 @@ module address_decoder(
                         m1_mux_sel <= '0;
                         m2_mux_sel <= '0;
                         counter <= 0;
-                        if (s1_queued) s1_queued <= '0;
+                        if (s1_queued) begin
+                            s1_queued <= '0;
+                            if (s1_splits == 2'b01 || s1_splits == 2'b10) s1_splits <= 2'b00;
+                            else if (s1_splits == 2'b11) s1_splits[0] <= '0;
+                        end
                         if (s2_queued) s2_queued <= '0;
                         if (s3_queued) s3_queued <= '0;
                         state <= IDLE;
                     end
                 end
                 SPLIT: begin
-                    s1_splitted <= '1;
+                    counter <= 0;
+                    if (s1_splits == 2'b00) s1_splits[0] <= '1;
+                    else if (s1_splits == 2'b01) s1_splits[1] <= '1;
                     slv_ready <= '0;
                     slv_responded <= '0;
                     state <= IDLE;

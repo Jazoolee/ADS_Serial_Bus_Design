@@ -69,20 +69,29 @@ module arbiter(
                     if ((!m1_tx && !m1_splitted) && (!m2_tx && !m2_splitted)) begin
                         m1_queued <= '1;
                         m2_queued <= '0;
+                        state <= BUS_GRANTED;
                     end else if ((m1_splitted) && (!m2_tx && !m2_splitted)) begin
                         m1_queued <= '0;
                         m2_queued <= '1;
+                        state <= BUS_GRANTED;
                     end else if ((!m1_tx && !m1_splitted) && (m2_splitted)) begin
                         m1_queued <= '1;
                         m2_queued <= '0;
+                        state <= BUS_GRANTED;
+                    end else if (m1_splitted && m2_splitted) begin
+                        m1_queued <= '1;
+                        m1_splitted <= '0;
+                        m2_queued <= '0;
+                        state <= SLV_WAIT;
                     end else if (!m1_tx) begin
                         m1_queued <= '1;
                         m2_queued <= '0;
+                        state <= BUS_GRANTED;
                     end else if (!m2_tx) begin
                         m1_queued <= '0;
                         m2_queued <= '1;
+                        state <= BUS_GRANTED;
                     end
-                    state <= BUS_GRANTED;
                 end
                 BUS_GRANTED: begin
                     if (m1_queued && !m1_splitted) m1_rx <= '0;
@@ -120,7 +129,7 @@ module arbiter(
                         end
                         state <= ADDR_TX; 
                     end else if (!slv_ready && slv_responded) begin                        
-                        if ((m1_queued && !m2_tx) || (m2_queued && !m1_tx)) state <= SPLIT;
+                            state <= SPLIT;
                     end
                 end
                 ADDR_TX: begin
@@ -153,7 +162,7 @@ module arbiter(
                     end
                 end
                 DATA_RX: begin
-                    if (counter <= 7) begin
+                    if (counter <= 12) begin
                         counter <= counter + 1;
                     end else begin
                         counter <= 0;
@@ -173,9 +182,14 @@ module arbiter(
                     end
                 end
                 SPLIT: begin
-                    if (m1_queued && !m2_tx) m1_splitted <= '1; 
-                    if (m2_queued && !m1_tx) m2_splitted <= '1;
-                    state <= BUS_REQUESTED; 
+                    if (m1_queued && !m2_tx) begin
+                        m1_splitted <= '1; 
+                        state <= BUS_REQUESTED;
+                    end
+                    if (m2_queued && !m1_tx) begin
+                        m2_splitted <= '1;
+                        state <= BUS_REQUESTED;
+                    end                 
                 end
                 default: state <= IDLE;
             endcase
