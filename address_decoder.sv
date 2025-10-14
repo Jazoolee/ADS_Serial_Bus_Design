@@ -134,6 +134,9 @@ module address_decoder(
                     end
                 end
                 WAIT_DATA_RX: begin
+                    s1_rx <= '1;
+                    s2_rx <= '1;
+                    s3_rx <= '1;
                     if (counter < 1) counter <= counter + 1;
                     else begin
                         counter <= '0;

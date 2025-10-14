@@ -36,14 +36,16 @@ module arbiter(
     localparam DATA_RX = 4'b1001;
     localparam SPLIT = 4'b1010;
 
-    assign m1 = (m1_queued && !m1_splitted);
-    assign m2 = (m2_queued && !m2_splitted);
+    // assign m1 = (m1_queued && !m1_splitted);
+    // assign m2 = (m2_queued && !m2_splitted);
 
     always_ff @(posedge clk or negedge rstn) begin
         if (!rstn) begin
             state <= IDLE;
             m1_rx <= '1;
             m2_rx <= '1;
+            m1 <= '0;
+            m2 <= '0;
             counter <= '0;
             m1_queued <= '0;
             m2_queued <= '0;
@@ -55,6 +57,8 @@ module arbiter(
                 IDLE: begin
                     m1_rx <= '1;
                     m2_rx <= '1;
+                    m1 <= '0;
+                    m2 <= '0;
                     counter <= '0;
                     addr_rdy <= '0;
                     if (!m1_tx || !m2_tx) begin
@@ -65,10 +69,10 @@ module arbiter(
                     if ((!m1_tx && !m1_splitted) && (!m2_tx && !m2_splitted)) begin
                         m1_queued <= '1;
                         m2_queued <= '0;
-                    end else if ((!m1_tx && m1_splitted) && (!m2_tx && !m2_splitted)) begin
+                    end else if ((m1_splitted) && (!m2_tx && !m2_splitted)) begin
                         m1_queued <= '0;
                         m2_queued <= '1;
-                    end else if ((!m1_tx && !m1_splitted) && (!m2_tx && m2_splitted)) begin
+                    end else if ((!m1_tx && !m1_splitted) && (m2_splitted)) begin
                         m1_queued <= '1;
                         m2_queued <= '0;
                     end else if (!m1_tx) begin
@@ -106,8 +110,14 @@ module arbiter(
                 SLV_WAIT: begin
                     addr_rdy <= '0;
                     if (slv_ready && slv_responded) begin
-                        if (m1_queued && !m1_splitted) m1_rx <= '0;
-                        if (m2_queued && !m2_splitted) m2_rx <= '0;
+                        if (m1_queued && !m1_splitted) begin
+                            m1_rx <= '0;
+                            m1 <= '1;
+                        end
+                        if (m2_queued && !m2_splitted) begin
+                            m2_rx <= '0;
+                            m2 <= '1;
+                        end
                         state <= ADDR_TX; 
                     end else if (!slv_ready && slv_responded) begin                        
                         if ((m1_queued && !m2_tx) || (m2_queued && !m1_tx)) state <= SPLIT;
@@ -127,6 +137,8 @@ module arbiter(
                         counter <= counter + 1;
                     end else begin
                         counter <= 0;
+                        m1 <= '0;
+                        m2 <= '0;
                         if (m1_splitted) begin
                             m1_queued <= '1;
                             m1_splitted <= '0;
@@ -145,6 +157,8 @@ module arbiter(
                         counter <= counter + 1;
                     end else begin
                         counter <= 0;
+                        m1 <= '0;
+                        m2 <= '0;
                         if (m1_splitted) begin
                             m1_queued <= '1;
                             m1_splitted <= '0;

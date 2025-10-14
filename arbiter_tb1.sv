@@ -107,7 +107,7 @@ module arbiter_tb1();
         m1_data_ready = '0;
         m2_data_ready = '0;
         busy = '1;
-        m1_rw = '0;
+        m1_rw = '1;
         m2_rw = '0;
     end
 
@@ -124,7 +124,7 @@ module arbiter_tb1();
     end
 
     initial begin
-        #1000 busy = '0; // slave1_split scenario
+        #3000 busy = '0; // slave1_split scenario
     end
 
     initial begin
