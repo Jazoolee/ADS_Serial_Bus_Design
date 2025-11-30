@@ -189,6 +189,17 @@ module arbiter(
                     if (m2_queued && !m1_tx) begin
                         m2_splitted <= '1;
                         state <= BUS_REQUESTED;
+                    end
+                    if (slv_ready && slv_responded) begin
+                        if (m1_queued && !m1_splitted) begin
+                            m1_rx <= '0;
+                            m1 <= '1;
+                        end
+                        if (m2_queued && !m2_splitted) begin
+                            m2_rx <= '0;
+                            m2 <= '1;
+                        end
+                        state <= ADDR_TX; 
                     end                 
                 end
                 default: state <= IDLE;

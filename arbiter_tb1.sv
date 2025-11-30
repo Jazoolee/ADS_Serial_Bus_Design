@@ -106,7 +106,7 @@ module arbiter_tb1();
         s3_tx = '1;
         m1_data_ready = '0;
         m2_data_ready = '0;
-        busy = '0;
+        busy = '1;
         m1_rw = '1;
         m2_rw = '0;
     end
