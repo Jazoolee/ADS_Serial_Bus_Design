@@ -5,12 +5,14 @@ module slave1(
     input logic rx,
     output logic tx,
 
-    input logic busy
+    input logic busy,
+	output logic [7:0] wdata,
+    output logic [3:0] state_o
     );
 
     logic [13:0] counter;
     logic [13:0] addr;
-    logic [7:0] wdata;
+    //logic [7:0] wdata;
     logic [7:0] rdata;
 
     logic [3:0] state;
@@ -22,16 +24,19 @@ module slave1(
     localparam DATA_RX = 4'b0101;
     localparam SPLIT = 4'b0110;
 
+    assign state_o = state;
+
     always_ff @(posedge clk or negedge rstn) begin
         if (!rstn) begin
             state <= IDLE;
             tx <= '1;
             counter <= '0;
-            addr[13:12] = 2'b00;
+            addr[13:12] <= 2'b00;
         end else begin
             case (state)
                 IDLE: begin
                     counter <= '0;
+                    tx <= '1;
                     if (!rx) state <= SLV_REQUESTED;
                 end
                 SLV_REQUESTED: begin

@@ -24,7 +24,8 @@ module address_decoder(
     output logic slv_responded,
 
     output logic m1_mux_sel,
-    output logic m2_mux_sel
+    output logic m2_mux_sel,
+    output logic [3:0] state_o
     );
 
     logic [13:0] counter;
@@ -46,7 +47,7 @@ module address_decoder(
     localparam WAIT_DATA_RX = 4'b0111;
     localparam DATA_RX = 4'b1000;
     localparam SPLIT = 4'b1001;
-
+    assign state_o = state;
     always_ff @(posedge clk or negedge rstn) begin
         if (!rstn) begin
             state <= IDLE;
@@ -55,7 +56,7 @@ module address_decoder(
             s3_rx <= '1;
             slv_ready <= '0;
             s1_splits <= 2'b00;
-            counter <= 0;
+            counter <= '0;
             slv_responded <= '0;
             m1_mux_sel <= '0;
             m2_mux_sel <= '0;

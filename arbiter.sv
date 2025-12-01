@@ -13,7 +13,8 @@ module arbiter(
     output logic m1,
     output logic m2,
     input logic slv_ready,
-    input logic slv_responded
+    input logic slv_responded,
+	 output logic [3:0] state_o
 	 );
 
     logic m1_queued;
@@ -23,7 +24,7 @@ module arbiter(
     logic [13:0] counter; 
     logic m_rx;
     
-    logic [4:0] state;
+    logic [3:0] state;
     localparam IDLE = 4'b0000;
     localparam BUS_REQUESTED = 4'b0001;   
     localparam BUS_GRANTED = 4'b0010; 
@@ -38,7 +39,7 @@ module arbiter(
 
     // assign m1 = (m1_queued && !m1_splitted);
     // assign m2 = (m2_queued && !m2_splitted);
-
+	assign state_o = state;
     always_ff @(posedge clk or negedge rstn) begin
         if (!rstn) begin
             state <= IDLE;

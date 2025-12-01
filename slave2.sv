@@ -3,12 +3,13 @@ module slave2(
     input logic rstn,
 
     input logic rx,
-    output logic tx
+    output logic tx,
+    output logic [7:0] wdata
     );
 
     logic [13:0] counter;
     logic [13:0] addr;
-    logic [7:0] wdata;
+    // logic [7:0] wdata;
     logic [7:0] rdata;
 
     logic [3:0] state;
@@ -28,6 +29,7 @@ module slave2(
         end else begin
             case (state)
                 IDLE: begin
+                    tx <= '1;
                     if (!rx) state <= SLV_REQUESTED;
                 end
                 SLV_REQUESTED: begin

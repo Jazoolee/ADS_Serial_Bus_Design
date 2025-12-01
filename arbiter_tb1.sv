@@ -128,7 +128,14 @@ module arbiter_tb1();
     end
 
     initial begin
-        #280 m2_data_ready = '1; // slave1_split scenario
+        #280 m2_data_ready = '1;
         #20 m2_data_ready = '0;
     end
+
+    // initial begin
+    //     #5000;
+    //     m1_data_ready = '1;
+    //     m1_rw = '0;
+    //     #20 m1_data_ready = '0;
+    // end
 endmodule

@@ -5,12 +5,13 @@ module master2(
     output logic tx,
 
     input logic data_ready,
-    input logic rw // 1:write 0:read
+    input logic rw, // 1:write 0:read
+    output logic [7:0] rdata
     );
 
     logic [13:0] addr;
     logic [7:0] wdata;
-    logic [7:0] rdata;
+    // logic [7:0] rdata;
     logic [13:0] counter;  
 
     logic [2:0] state;
@@ -56,7 +57,7 @@ module master2(
                             tx <= addr[counter];
                             counter <= counter+1;
                         end else begin
-                            tx <= rw ? 1 : 0;
+                            tx <= rw ? '1 : '0;
                             counter <= 0;
                             state <= rw ? TX_DATA : WAIT_RX_DATA;
                         end
