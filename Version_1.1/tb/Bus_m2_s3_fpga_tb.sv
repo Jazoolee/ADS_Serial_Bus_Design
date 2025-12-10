@@ -1,24 +1,20 @@
 module Bus_m2_s3_fpga_tb(
     input logic clk, rstn,
     input logic [1:0] trigger,
-    output wire [7:0] led,
-    output logic c00
+    output wire [7:0] led
 );
     // logic clk,rstn,trigger;
 	logic m1_ready, m2_ready;
 	logic m1_rw, m2_rw, s1_busy;
 	logic [7:0] s1_wdata, s2_wdata, s3_wdata;
     logic [7:0] m1_rdata, m2_rdata;
-	// logic [3:0] arbiter_state;
-    // logic [3:0] decoder_state;
     logic [3:0] slave1_state;
-	logic c0;
+    logic [1:0]state;
 	 
 	Bus_m2_s3 Bus_m2_s3(.*);
 	
 	assign led = s1_wdata;
     // assign led = slave1_state;
-	 assign c00 = c0;
 	
 	initial begin
         m1_ready = '0;
@@ -42,7 +38,7 @@ module Bus_m2_s3_fpga_tb(
     //     #100 trigger = '0;
     //     #20 trigger = '1;
     // end
-    logic [1:0]state;
+
     always @(posedge clk or negedge rstn) begin
         if (!rstn) begin
             state <= 2'b00;
