@@ -103,14 +103,14 @@ module arbiter(
                 SLV_ID_RX: begin
                     if (counter <= 1) begin
                         if (m1_queued && !m1_splitted) begin
-                            addr[counter] <= m1_tx;
+                            addr[counter[1:0]] <= m1_tx;
                             if (counter == 1) m1_rx <= '1;
                         end
                         if (m2_queued && !m2_splitted) begin
-                            addr[counter] <= m2_tx;  
+                            addr[counter[1:0]] <= m2_tx;  
                             if (counter == 1) m2_rx <= '1;                          
                         end
-                        counter <= counter + 1;
+                        counter <= 14'(counter+1);
                     end else begin
                         addr_rdy <= '1;                        
                         counter <= 0;
@@ -135,7 +135,7 @@ module arbiter(
                 end
                 ADDR_TX: begin
                     if (counter <= 12) begin
-                        counter <= counter + 1;
+                        counter <= 14'(counter+1);
                     end else begin
                         counter <= 0;
                         if ((m1_queued && m1_tx) || (m2_queued && m2_tx)) state <= DATA_TX;
@@ -144,7 +144,7 @@ module arbiter(
                 end
                 DATA_TX: begin
                     if (counter <= 7) begin
-                        counter <= counter + 1;
+                        counter <= 14'(counter+1);
                     end else begin
                         counter <= 0;
                         m1 <= '0;
@@ -164,7 +164,7 @@ module arbiter(
                 end
                 DATA_RX: begin
                     if (counter <= 12) begin
-                        counter <= counter + 1;
+                        counter <= 14'(counter+1);
                     end else begin
                         counter <= 0;
                         m1 <= '0;

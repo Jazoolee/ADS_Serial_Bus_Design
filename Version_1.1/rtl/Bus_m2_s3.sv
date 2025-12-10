@@ -11,7 +11,9 @@ module Bus_m2_s3(
     output [7:0] s2_wdata,
     output [7:0] s3_wdata,
     output [7:0] m1_rdata,
-    output [7:0] m2_rdata
+    output [7:0] m2_rdata,
+    output [3:0] slave1_state,
+    output logic c0
     );
 
     logic m1_tx, m2_tx;
@@ -26,7 +28,9 @@ module Bus_m2_s3(
         .rx(m1_rx),
         .data_ready(m1_ready),
         .rw(m1_rw),
-        .rdata(m1_rdata)
+        .rdata(m1_rdata),
+        .c0(c0)
+        // .state_o(slave1_state)
     );
 
     master2 master2(
@@ -51,7 +55,8 @@ module Bus_m2_s3(
         .s3_tx(s3_tx),
         .s1_rx(s1_rx),
         .s2_rx(s2_rx),
-        .s3_rx(s3_rx)
+        .s3_rx(s3_rx),
+        .state(slave1_state)
     );
 
     slave1 slave1(
@@ -60,7 +65,8 @@ module Bus_m2_s3(
         .rx(s1_rx),
         .tx(s1_tx),
         .busy(s1_busy),
-      .wdata(s1_wdata)
+        .wdata(s1_wdata)
+        // .state_o(slave1_state)
     );
 
     slave2 slave2(

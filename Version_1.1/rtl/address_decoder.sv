@@ -70,7 +70,7 @@ module address_decoder(
                     slv_responded <= '0;                    
                     if (s1_splits == 2'b11 || s1_splits == 2'b01) s1_rx <= '0;
                     else if (s1_splits == 2'b10) begin
-                        if (counter < 1) counter <= counter + 1;
+                        if (counter < 1) counter <= 14'(counter+1);
                         else s1_rx <= '0;
                     end
                     if (addr_rdy) begin
@@ -100,7 +100,7 @@ module address_decoder(
                     state <= SLV_WAIT;
                 end
                 SLV_WAIT: begin
-                    if (counter < 1) counter <= counter + 1;
+                    if (counter < 1) counter <= 14'(counter+1);
                     else begin
                         counter <= '0;
                         state <= SLV_RESPONDED;
@@ -141,7 +141,7 @@ module address_decoder(
                             if (!s3_tx) s3_queued <= '1;
                             state <= WAIT_DATA_RX;   
                         end                      
-                    end else counter <= counter + 1;                 
+                    end else counter <= 14'(counter+1);                 
                 end
                 DATA_TX: begin
                     if (counter <= 7) begin
@@ -154,7 +154,7 @@ module address_decoder(
                         end
                         if (!s2_tx) s2_rx <= m1? m1_tx : m2_tx;
                         if (!s3_tx) s3_rx <= m1? m1_tx : m2_tx;
-                        counter <= counter + 1;
+                        counter <= 14'(counter+1);
                     end else begin
                         counter <= 0;
                         state <= IDLE;
@@ -164,7 +164,7 @@ module address_decoder(
                     s1_rx <= '1;
                     s2_rx <= '1;
                     s3_rx <= '1;
-                    if (counter < 1) counter <= counter + 1;
+                    if (counter < 1) counter <= 14'(counter+1);
                     else begin
                         counter <= '0;
                         state <= DATA_RX;
@@ -173,14 +173,14 @@ module address_decoder(
                 DATA_RX: begin
                     if (counter <= 7)begin                        
                         if (m1) begin 
-                            m1_rx <= s1_queued ? s1_tx : (s2_queued ? s2_tx : s3_tx);
                             m1_mux_sel <= '1;
+                            m1_rx <= s1_queued ? s1_tx : (s2_queued ? s2_tx : s3_tx);                            
                         end
                         if (m2) begin
                             m2_rx <= s1_queued ? s1_tx : (s2_queued ? s2_tx : s3_tx);
                             m2_mux_sel <= '1;
                         end
-                        counter <= counter + 1;
+                        counter <= 14'(counter+1);
                     end else begin
                         m1_mux_sel <= '0;
                         m2_mux_sel <= '0;

@@ -7,7 +7,6 @@ module Bus_m2_s3_tb();
 	logic [3:0] arbiter_state;
     logic [3:0] decoder_state;
     logic [3:0] slave1_state;
-
 	 
 	Bus_m2_s3 Bus_m2_s3(.*);
 	
@@ -16,7 +15,7 @@ module Bus_m2_s3_tb();
         rstn = '1;
         m1_ready = '0;
         m2_ready = '0;
-        s1_busy = '1;
+        s1_busy = '0;
         m1_rw = '1;
         m2_rw = '0;
     end
@@ -33,14 +32,14 @@ module Bus_m2_s3_tb();
         #20 m1_ready = '0;
     end
 
-    initial begin
-        #800 s1_busy = '0; // slave1_split scenario
-    end
+    // initial begin
+    //     #800 s1_busy = '0; // slave1_split scenario
+    // end
 
-    initial begin
-        #280 m2_ready = '1;
-        #20 m2_ready = '0;
-    end
+    // initial begin
+    //     #280 m2_ready = '1;
+    //     #20 m2_ready = '0;
+    // end
 	 
 	 initial begin
 		$monitor(s1_wdata, $time);

@@ -12,7 +12,6 @@ module slave1(
 
     logic [13:0] counter;
     logic [13:0] addr;
-    //logic [7:0] wdata;
     logic [7:0] rdata;
 
     logic [3:0] state;
@@ -32,6 +31,7 @@ module slave1(
             tx <= '1;
             counter <= '0;
             addr[13:12] <= 2'b00;
+            wdata <= '0;
         end else begin
             case (state)
                 IDLE: begin
@@ -48,7 +48,7 @@ module slave1(
                     end
                 end
                 SLV_READY: begin
-                    if (counter < 3) counter <= counter+1;
+                    if (counter < 3) counter <= 14'(counter+1);
                     else begin
                         counter <= '0;
                         state <= ADDR_RX;
@@ -57,7 +57,7 @@ module slave1(
                 ADDR_RX: begin
                     if (counter <= 11) begin
                         addr[counter] <= rx;
-                        counter <= counter + 1;
+                        counter <= 14'(counter+1);
                     end else begin
                         counter <= 0;
                         state <= rx ? DATA_RX : DATA_TX;
@@ -65,8 +65,8 @@ module slave1(
                 end
                 DATA_RX: begin
                     if (counter <= 7) begin
-                        wdata[counter] <= rx;
-                        counter <= counter + 1;
+                        wdata[counter[7:0]] <= rx;
+                        counter <= 14'(counter+1);
                     end else begin
                         counter <= 0;
                         tx <= '1;
@@ -75,8 +75,8 @@ module slave1(
                 end
                 DATA_TX: begin
                     if (counter <= 7) begin
-                        tx <= rdata[counter];
-                        counter <= counter + 1;
+                        tx <= rdata[counter[7:0]];
+                        counter <= 14'(counter+1);
                     end else begin
                         counter <= 0;
                         tx <= '1;
@@ -94,5 +94,5 @@ module slave1(
         end
     end
 
-    initial rdata = 8'hD3; //1101 0011
+    initial rdata = 8'hff; //1101 0011
 endmodule

@@ -11,7 +11,6 @@ module master2(
 
     logic [13:0] addr;
     logic [7:0] wdata;
-    // logic [7:0] rdata;
     logic [13:0] counter;  
 
     logic [2:0] state;
@@ -28,6 +27,7 @@ module master2(
             state <= IDLE;
             tx <= '1;
             counter <= '0;
+            rdata <= '0;
         end else begin
             case (state)
                 IDLE: begin
@@ -43,7 +43,7 @@ module master2(
                     if (rx === '0) begin
                         if (counter <= 13) begin
                             tx <= addr[counter];
-                            counter <= counter+1;
+                            counter <= 14'(counter+1);
                         end else begin
                             counter <= 0;
                             tx <= '0;
@@ -55,7 +55,7 @@ module master2(
                     if (rx === '0) begin
                         if (counter <= 11) begin
                             tx <= addr[counter];
-                            counter <= counter+1;
+                            counter <= 14'(counter+1);
                         end else begin
                             tx <= rw ? '1 : '0;
                             counter <= 0;
@@ -65,15 +65,15 @@ module master2(
                 end
                 TX_DATA: begin
                     if (counter <= 7) begin
-                        tx <= wdata[counter];
-                        counter <= counter+1;
+                        tx <= wdata[counter[7:0]];
+                        counter <= 14'(counter+1);
                     end else begin
                         counter <= 0;
                         state <= IDLE;
                     end
                 end
                 WAIT_RX_DATA: begin
-                    if (counter <= 2) counter <= counter + 1;
+                    if (counter <= 2) counter <= 14'(counter+1);
                     else begin
                         counter <= '0;
                         state <= RX_DATA;
@@ -81,8 +81,8 @@ module master2(
                 end
                 RX_DATA: begin
                     if (counter <= 7) begin
-                        rdata[counter] <= rx;
-                        counter <= counter+1;
+                        rdata[counter[7:0]] <= rx;
+                        counter <= 14'(counter+1);
                     end else begin
                         counter <= 0;
                         state <= IDLE;
